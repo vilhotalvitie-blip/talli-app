@@ -1,0 +1,200 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS Variables for Theming */
+@layer base {
+  :root {
+    /* Light Theme - Default */
+    --background: 0 0% 100%;
+    --background-primary: 0 0% 100%;
+    --background-secondary: 210 40% 98%;
+    --background-tertiary: 210 40% 96%;
+    --background-elevated: 0 0% 100%;
+
+    --foreground: 222 47% 11%;
+    --foreground-primary: 222 47% 11%;
+    --foreground-secondary: 215 16% 47%;
+    --foreground-tertiary: 215 20% 65%;
+    --foreground-inverted: 0 0% 100%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 160 84% 39%;
+
+    --primary-50: 152 81% 96%;
+    --primary-100: 149 80% 90%;
+    --primary-200: 152 69% 80%;
+    --primary-300: 156 64% 70%;
+    --primary-400: 158 64% 52%;
+    --primary-500: 160 84% 39%;
+    --primary-600: 161 94% 30%;
+    --primary-700: 162 93% 24%;
+    --primary-800: 163 88% 20%;
+    --primary-900: 164 86% 16%;
+    --primary-950: 166 91% 9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark Theme */
+    --background: 222 47% 11%;
+    --background-primary: 222 47% 11%;
+    --background-secondary: 217 33% 17%;
+    --background-tertiary: 215 28% 25%;
+    --background-elevated: 217 33% 17%;
+
+    --foreground: 210 40% 98%;
+    --foreground-primary: 210 40% 98%;
+    --foreground-secondary: 215 20% 65%;
+    --foreground-tertiary: 215 16% 47%;
+    --foreground-inverted: 222 47% 11%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --card: 217 33% 17%;
+    --card-foreground: 210 40% 98%;
+
+    --border: 215 28% 25%;
+    --input: 215 28% 25%;
+    --ring: 158 64% 52%;
+
+    --primary-50: 166 91% 9%;
+    --primary-100: 164 86% 16%;
+    --primary-200: 163 88% 20%;
+    --primary-300: 162 93% 24%;
+    --primary-400: 161 94% 30%;
+    --primary-500: 158 64% 52%;
+    --primary-600: 156 64% 70%;
+    --primary-700: 152 69% 80%;
+    --primary-800: 149 80% 90%;
+    --primary-900: 152 81% 96%;
+    --primary-950: 160 84% 98%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Focus Visible Styles */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  /* Reduced Motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Scrollbar Styling */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-muted-foreground/20;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/40;
+  }
+}
+
+/* Utility Classes */
+@layer utilities {
+  /* Text Balance */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Gradient Text */
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-secondary-500;
+  }
+
+  /* Glass Effect */
+  .glass {
+    @apply bg-background/80 backdrop-blur-lg border border-border/50;
+  }
+
+  /* Animation Utilities */
+  .animate-in {
+    animation: animate-in 0.2s ease-out;
+  }
+
+  .animate-out {
+    animation: animate-out 0.2s ease-in;
+  }
+
+  /* Hide Scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Keyframes */
+@keyframes animate-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes animate-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
