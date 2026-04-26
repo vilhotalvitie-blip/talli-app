@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Search, MapPin, Calendar, Home, Menu, X } from "lucide-react";
+import { Search, Calendar, Clock, Home, Menu, X, BookOpen, Info, ChevronRight } from "lucide-react";
 import { Button } from "@components/primitives/Button";
 import {
   Card,
@@ -15,35 +15,84 @@ import {
 } from "@stores/layoutStore";
 import { cn } from "@lib/utils";
 
-// Mock stable data
-const mockStables = [
+// Mock lesson/booking data (tunti/vuoro)
+const mockLessons = [
   {
     id: 1,
-    name: "Tampereen Ratsastuskeskus",
+    title: "Aikuisten alkeistunti",
+    stable: "Tampereen Ratsastuskeskus",
     location: "Tampere",
-    type: "Ratsastuskoulu",
-    image: "/stable1.jpg",
+    date: "Ma 27.4.",
+    time: "17:00 - 18:00",
+    duration: "60 min",
+    price: "35 €",
+    spots: 3,
+    type: "Alkeet",
+    instructor: "Maija Meikäläinen",
   },
   {
     id: 2,
-    name: "Espoon Talli",
+    title: "Lasten ponitunti",
+    stable: "Espoon Talli",
     location: "Espoo",
-    type: "Talli",
-    image: "/stable2.jpg",
+    date: "Ti 28.4.",
+    time: "16:00 - 17:00",
+    duration: "60 min",
+    price: "30 €",
+    spots: 5,
+    type: "Ponitunti",
+    instructor: "Liisa Ratsastaja",
   },
   {
     id: 3,
-    name: "Vuokatin Ratsastuskoulu",
+    title: "Kouluratsastus - Vaativa",
+    stable: "Vuokatin Ratsastuskoulu",
     location: "Vuokatti",
-    type: "Ratsastuskoulu",
-    image: "/stable3.jpg",
+    date: "Ke 29.4.",
+    time: "18:30 - 20:00",
+    duration: "90 min",
+    price: "55 €",
+    spots: 2,
+    type: "Koulu",
+    instructor: "Kalle Kouluttaja",
   },
   {
     id: 4,
-    name: "Hevoslehdon Ratsastustalli",
+    title: "Estevalmennus",
+    stable: "Hevoslehdon Ratsastustalli",
     location: "Helsinki",
-    type: "Talli",
-    image: "/stable4.jpg",
+    date: "To 30.4.",
+    time: "17:30 - 19:00",
+    duration: "90 min",
+    price: "50 €",
+    spots: 4,
+    type: "Este",
+    instructor: "Essi Estemies",
+  },
+];
+
+// Mock guidance/help content
+const mockGuidance = [
+  {
+    id: 1,
+    title: "Ensimmäistä kertaa tallille?",
+    description: "Tutustu ratsastuksen alkeisiin ja varaa ensimmäinen tuntisi.",
+    icon: BookOpen,
+    action: "Lue ohjeet",
+  },
+  {
+    id: 2,
+    title: "Miten varaan tunnin?",
+    description: "Opas tuntien varaamiseen ja maksamiseen TalliAppissa.",
+    icon: Info,
+    action: "Katso ohje",
+  },
+  {
+    id: 3,
+    title: "Varustepaketti",
+    description: "Mitä tarvitset mukaan ratsastustunnille?",
+    icon: Info,
+    action: "Katso lista",
   },
 ];
 
@@ -187,56 +236,99 @@ function Hero() {
     <section className="relative py-20 lg:py-32 bg-gradient-to-b from-primary-50 to-background dark:from-primary-950 dark:to-background">
       <div className="container mx-auto px-4 text-center">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-          Ratsastuksen uusi koti
+          Varaa ratsastustunti helposti
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-          Etsi sopiva talli ja varaa ratsastustuntisi helposti. TalliApp tuo
-          ratsastuksen lähemmäs sinua.
+          Etsi vapaat vuorot, vertaile hintoja ja varaa tunti suoraan. 
+          Sopii niin aloittelijoille kuin kokeneille ratsastajille.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-lg mx-auto">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Hae tallia tai paikkakuntaa..."
+              placeholder="Hae tuntia, tallia tai paikkakuntaa..."
               className="w-full h-10 pl-10 pr-4 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             />
           </div>
-          <Button className="h-10">Hae</Button>
+          <div className="flex gap-2">
+            <Button variant="outline" className="h-10">
+              <Calendar className="mr-2 h-4 w-4" />
+              Päivä
+            </Button>
+            <Button className="h-10">Hae</Button>
+          </div>
+        </div>
+        <div className="flex flex-wrap justify-center gap-4 mt-6 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <Clock className="h-4 w-4" />
+            Varaa 24/7
+          </span>
+          <span className="flex items-center gap-1">
+            <Calendar className="h-4 w-4" />
+            Peruutus jopa 24h ennen
+          </span>
         </div>
       </div>
     </section>
   );
 }
 
-function StableCard({ stable }: { stable: (typeof mockStables)[0] }) {
+function LessonCard({ lesson }: { lesson: (typeof mockLessons)[0] }) {
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
-      <div className="aspect-video bg-muted relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
-        <div className="absolute bottom-3 left-3 z-20">
-          <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-background text-foreground">
-            {stable.type}
-          </span>
+    <Card className="overflow-hidden hover:shadow-lg transition-all cursor-pointer group border-l-4 border-l-primary-500">
+      <CardHeader className="p-4 pb-2">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <span className="inline-flex items-center rounded-full bg-primary-100 dark:bg-primary-900 px-2 py-0.5 text-xs font-medium text-primary-700 dark:text-primary-300 mb-2">
+              {lesson.type}
+            </span>
+            <CardTitle className="text-lg group-hover:text-primary-500 transition-colors line-clamp-1">
+              {lesson.title}
+            </CardTitle>
+          </div>
+          <div className="text-right">
+            <p className="text-lg font-bold text-primary-600">{lesson.price}</p>
+          </div>
         </div>
-        <div className="absolute inset-0 bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
-          <Home className="h-12 w-12 text-primary-400" />
-        </div>
-      </div>
-      <CardHeader className="p-4">
-        <CardTitle className="text-lg group-hover:text-primary-500 transition-colors">
-          {stable.name}
-        </CardTitle>
-        <CardDescription className="flex items-center gap-1">
-          <MapPin className="h-3 w-3" />
-          {stable.location}
+        <CardDescription className="flex items-center gap-1 mt-1">
+          <Home className="h-3 w-3" />
+          {lesson.stable}
         </CardDescription>
       </CardHeader>
+      <CardContent className="p-4 pt-0">
+        <div className="space-y-2">
+          <div className="flex items-center gap-4 text-sm">
+            <span className="flex items-center gap-1 font-medium">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              {lesson.date}
+            </span>
+            <span className="flex items-center gap-1">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              {lesson.time}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">
+              Ohjaaja: {lesson.instructor}
+            </span>
+            <span className={cn(
+              "font-medium",
+              lesson.spots <= 2 ? "text-warning" : "text-success"
+            )}>
+              {lesson.spots} paikkaa jäljellä
+            </span>
+          </div>
+          <Button className="w-full mt-2">
+            Varaa nyt
+          </Button>
+        </div>
+      </CardContent>
     </Card>
   );
 }
 
-function FeaturedStables() {
+function AvailableLessons() {
   const { breakpoint } = useLayoutStore();
 
   const getGridCols = () => {
@@ -249,7 +341,7 @@ function FeaturedStables() {
       case "lg":
       case "xl":
       case "2xl":
-        return "grid-cols-4";
+        return "grid-cols-2 lg:grid-cols-4";
       default:
         return "grid-cols-1";
     }
@@ -259,14 +351,20 @@ function FeaturedStables() {
     <section className="py-16">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold">Suositellut tallit</h2>
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold">Tulevat tunnit</h2>
+            <p className="text-muted-foreground mt-1">
+              Vapaat vuorot seuraavalle 7 päivälle
+            </p>
+          </div>
           <Button variant="ghost" className="hidden sm:flex">
             Näytä kaikki
+            <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
         </div>
         <div className={cn("grid gap-6", getGridCols())}>
-          {mockStables.map((stable) => (
-            <StableCard key={stable.id} stable={stable} />
+          {mockLessons.map((lesson) => (
+            <LessonCard key={lesson.id} lesson={lesson} />
           ))}
         </div>
       </div>
@@ -274,45 +372,87 @@ function FeaturedStables() {
   );
 }
 
-function Features() {
-  const features = [
+function GuidanceHelp() {
+  return (
+    <section className="py-16 bg-muted/50">
+      <div className="container mx-auto px-4">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">
+          Ohjeita ja apua
+        </h2>
+        <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-12">
+          Uusi ratsastaja? Tarvitsetko apua varauksessa? Tutustu ohjeisiin.
+        </p>
+        <div className="grid md:grid-cols-3 gap-6">
+          {mockGuidance.map((guide) => (
+            <Card key={guide.id} className="hover:shadow-md transition-shadow cursor-pointer group">
+              <CardHeader className="pb-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-secondary-100 dark:bg-secondary-900 flex items-center justify-center shrink-0">
+                    <guide.icon className="h-5 w-5 text-secondary-600" />
+                  </div>
+                  <div className="flex-1">
+                    <CardTitle className="text-lg group-hover:text-secondary-500 transition-colors">
+                      {guide.title}
+                    </CardTitle>
+                    <CardDescription className="mt-1">
+                      {guide.description}
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <Button variant="ghost" className="text-secondary-600 hover:text-secondary-700 p-0 h-auto">
+                  {guide.action}
+                  <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HowItWorks() {
+  const steps = [
     {
       icon: Search,
-      title: "Helppo haku",
+      title: "1. Etsi tunti",
       description:
-        "Löydä tallit lähelläsi tai etsi tietyn alueen ratsastuskeskuksia.",
+        "Selaa vapaita vuoroja tai hae tietyn tyyppistä tuntia lähelläsi.",
     },
     {
       icon: Calendar,
-      title: "Varaa tunteja",
+      title: "2. Varaa aika",
       description:
-        "Tutustu tarjontaan ja varaa ratsastustunnit suoraan verkossa.",
+        "Valitse sopiva aika ja varaa paikkasi. Saat vahvistuksen sähköpostiin.",
     },
     {
-      icon: Home,
-      title: "Tallien hallinta",
+      icon: BookOpen,
+      title: "3. Ratsasta!",
       description:
-        "Hallinnoi omaa talliasi ja tarjoa palveluitasi ratsastajille.",
+        "Tule tallille ja nauti ratsastuksesta. Muista varusteet tai vuokraa ne paikan päällä.",
     },
   ];
 
   return (
-    <section className="py-16 bg-muted/50">
+    <section className="py-16">
       <div className="container mx-auto px-4">
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">
-          Miten TalliApp toimii
+          Näin varaat tunnin
         </h2>
         <div className="grid md:grid-cols-3 gap-8">
-          {features.map((feature, index) => (
-            <Card key={index} className="text-center">
+          {steps.map((step, index) => (
+            <Card key={index} className="text-center border-t-4 border-t-primary-500">
               <CardHeader>
-                <div className="mx-auto w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center mb-4">
-                  <feature.icon className="h-6 w-6 text-primary-600" />
+                <div className="mx-auto w-14 h-14 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center mb-4">
+                  <step.icon className="h-7 w-7 text-primary-600" />
                 </div>
-                <CardTitle className="text-xl">{feature.title}</CardTitle>
+                <CardTitle className="text-xl">{step.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription>{feature.description}</CardDescription>
+                <CardDescription className="text-base">{step.description}</CardDescription>
               </CardContent>
             </Card>
           ))}
@@ -378,8 +518,9 @@ function App() {
       <Header />
       <main>
         <Hero />
-        <FeaturedStables />
-        <Features />
+        <AvailableLessons />
+        <HowItWorks />
+        <GuidanceHelp />
       </main>
       <Footer />
     </div>
