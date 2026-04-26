@@ -16,6 +16,7 @@ import {
 import { cn } from "@lib/utils";
 import { BookingWizard } from "@components/booking/BookingWizard";
 import { Lesson } from "@components/booking/types";
+import { LessonCalendar } from "@components/calendar/LessonCalendar";
 
 // Mock lesson/booking data (tunti/vuoro)
 const mockLessons = [
@@ -534,6 +535,25 @@ function App() {
       <main>
         <Hero />
         <AvailableLessons onBook={handleBook} />
+
+        {/* Calendar Section */}
+        <section className="py-16 bg-muted/30">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl md:text-3xl font-bold mb-2">Kalenteri</h2>
+                <p className="text-muted-foreground">
+                  Selaa saatavilla olevia tunteja kalenterinäkymässä
+                </p>
+              </div>
+              <LessonCalendar
+                lessons={mockLessons as Lesson[]}
+                onSelectLesson={handleBook}
+              />
+            </div>
+          </div>
+        </section>
+
         <HowItWorks />
         <GuidanceHelp />
       </main>
