@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Search, Calendar, Clock, Home, Menu, X, BookOpen, Info, ChevronRight } from "lucide-react";
 import { Button } from "@components/primitives/Button";
 import {
@@ -14,6 +14,8 @@ import {
   initializeBreakpointDetection,
 } from "@stores/layoutStore";
 import { cn } from "@lib/utils";
+import { BookingWizard } from "@components/booking/BookingWizard";
+import { Lesson } from "@components/booking/types";
 
 // Mock lesson/booking data (tunti/vuoro)
 const mockLessons = [
@@ -274,7 +276,7 @@ function Hero() {
   );
 }
 
-function LessonCard({ lesson }: { lesson: (typeof mockLessons)[0] }) {
+function LessonCard({ lesson, onBook }: { lesson: Lesson; onBook: (lesson: Lesson) => void }) {
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all cursor-pointer group border-l-4 border-l-primary-500">
       <CardHeader className="p-4 pb-2">
@@ -319,7 +321,7 @@ function LessonCard({ lesson }: { lesson: (typeof mockLessons)[0] }) {
               {lesson.spots} paikkaa jäljellä
             </span>
           </div>
-          <Button className="w-full mt-2">
+          <Button className="w-full mt-2" onClick={() => onBook(lesson)}>
             Varaa nyt
           </Button>
         </div>
@@ -328,7 +330,7 @@ function LessonCard({ lesson }: { lesson: (typeof mockLessons)[0] }) {
   );
 }
 
-function AvailableLessons() {
+function AvailableLessons({ onBook }: { onBook: (lesson: Lesson) => void }) {
   const { breakpoint } = useLayoutStore();
 
   const getGridCols = () => {
@@ -364,7 +366,7 @@ function AvailableLessons() {
         </div>
         <div className={cn("grid gap-6", getGridCols())}>
           {mockLessons.map((lesson) => (
-            <LessonCard key={lesson.id} lesson={lesson} />
+            <LessonCard key={lesson.id} lesson={lesson as Lesson} onBook={onBook} />
           ))}
         </div>
       </div>
@@ -501,6 +503,9 @@ function Footer() {
 }
 
 function App() {
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
+
   useEffect(() => {
     // Initialize theme
     initializeTheme();
@@ -513,16 +518,32 @@ function App() {
     };
   }, []);
 
+  const handleBook = (lesson: Lesson) => {
+    setSelectedLesson(lesson);
+    setBookingOpen(true);
+  };
+
+  const handleCloseBooking = () => {
+    setBookingOpen(false);
+    setSelectedLesson(null);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
       <main>
         <Hero />
-        <AvailableLessons />
+        <AvailableLessons onBook={handleBook} />
         <HowItWorks />
         <GuidanceHelp />
       </main>
       <Footer />
+
+      <BookingWizard
+        lesson={selectedLesson}
+        open={bookingOpen}
+        onClose={handleCloseBooking}
+      />
     </div>
   );
 }
