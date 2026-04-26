@@ -16,7 +16,7 @@ import {
 import { cn } from "@lib/utils";
 import { BookingWizard } from "@components/booking/BookingWizard";
 import { Lesson } from "@components/booking/types";
-import { LessonCalendar } from "@components/calendar/LessonCalendar";
+import { CalendarPicker } from "@components/ui/CalendarPicker";
 
 // Mock lesson/booking data (tunti/vuoro)
 const mockLessons = [
@@ -235,6 +235,16 @@ function Header() {
 }
 
 function Hero() {
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  const formatDateButton = () => {
+    if (!selectedDate) return "Päivä";
+    const day = selectedDate.getDate();
+    const month = selectedDate.getMonth() + 1;
+    return `${day}.${month}.`;
+  };
+
   return (
     <section className="relative py-20 lg:py-32 bg-gradient-to-b from-primary-50 to-background dark:from-primary-950 dark:to-background">
       <div className="container mx-auto px-4 text-center">
@@ -242,7 +252,7 @@ function Hero() {
           Varaa ratsastustunti helposti
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-          Etsi vapaat vuorot, vertaile hintoja ja varaa tunti suoraan. 
+          Etsi vapaat vuorot, vertaile hintoja ja varaa tunti suoraan.
           Sopii niin aloittelijoille kuin kokeneille ratsastajille.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-lg mx-auto">
@@ -254,11 +264,29 @@ function Hero() {
               className="w-full h-10 pl-10 pr-4 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             />
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="h-10">
-              <Calendar className="mr-2 h-4 w-4" />
-              Päivä
-            </Button>
+          <div className="flex gap-2 relative">
+            <div className="relative">
+              <Button
+                variant={selectedDate ? "default" : "outline"}
+                className="h-10"
+                onClick={() => setCalendarOpen(!calendarOpen)}
+              >
+                <Calendar className="mr-2 h-4 w-4" />
+                {formatDateButton()}
+              </Button>
+              {calendarOpen && (
+                <div className="absolute top-full left-0 mt-2 z-50">
+                  <CalendarPicker
+                    selectedDate={selectedDate}
+                    onSelect={(date) => {
+                      setSelectedDate(date);
+                      setCalendarOpen(false);
+                    }}
+                    onClose={() => setCalendarOpen(false)}
+                  />
+                </div>
+              )}
+            </div>
             <Button className="h-10">Hae</Button>
           </div>
         </div>
@@ -535,25 +563,6 @@ function App() {
       <main>
         <Hero />
         <AvailableLessons onBook={handleBook} />
-
-        {/* Calendar Section */}
-        <section className="py-16 bg-muted/30">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <div className="text-center mb-8">
-                <h2 className="text-2xl md:text-3xl font-bold mb-2">Kalenteri</h2>
-                <p className="text-muted-foreground">
-                  Selaa saatavilla olevia tunteja kalenterinäkymässä
-                </p>
-              </div>
-              <LessonCalendar
-                lessons={mockLessons as Lesson[]}
-                onSelectLesson={handleBook}
-              />
-            </div>
-          </div>
-        </section>
-
         <HowItWorks />
         <GuidanceHelp />
       </main>
