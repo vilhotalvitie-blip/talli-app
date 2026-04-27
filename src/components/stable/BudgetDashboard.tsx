@@ -1,7 +1,8 @@
-import { ArrowLeft, Plus, Euro, PieChart, TrendingUp } from "lucide-react";
+import { ArrowLeft, Plus, Euro, PieChart, TrendingUp, Settings } from "lucide-react";
 import { Button } from "@components/primitives/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@components/primitives/Card";
 import { useStableStore } from "@stores/stableStore";
+import { BudgetChart } from "./BudgetChart";
 
 interface BudgetDashboardProps {
   onBack: () => void;
@@ -77,65 +78,110 @@ export function BudgetDashboard({ onBack }: BudgetDashboardProps) {
         </Card>
       </div>
 
-      {/* Categories */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card>
+      {/* Circular Budget Chart */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle>Kulukategoriat</CardTitle>
-            <CardDescription>Kulut kategorioittain</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Budjettinäkymä</CardTitle>
+                <CardDescription>Menot ja jäljellä oleva</CardDescription>
+              </div>
+              <Button variant="ghost" size="icon">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {categoryTotals.map((cat) => (
-                <div key={cat.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: cat.color }}
-                    />
-                    <span className="font-medium">{cat.name}</span>
-                  </div>
-                  <span className="font-bold">{cat.total} €</span>
-                </div>
-              ))}
-            </div>
+            <BudgetChart totalBudget={1500} />
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Viimeisimmät kulut</CardTitle>
-            <CardDescription>Viimeiset kirjatut kulut</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {expenses.length === 0 ? (
-              <p className="text-muted-foreground">Ei kirjattuja kuluja</p>
-            ) : (
-              <div className="space-y-2">
-                {expenses.slice(0, 5).map((expense) => {
-                  const category = budgetCategories.find(
-                    (c) => c.id === expense.categoryId
-                  );
-                  const horse = horses.find((h) => h.id === expense.horseId);
-                  return (
-                    <div
-                      key={expense.id}
-                      className="flex items-center justify-between p-3 bg-muted rounded-lg"
-                    >
+        <div className="lg:col-span-2 space-y-6">
+          {/* Categories */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Kulukategoriat</CardTitle>
+              <CardDescription>Kulut kategorioittain samoilla väreillä</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {categoryTotals.map((cat) => (
+                  <div key={cat.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: cat.color }}
+                      />
                       <div>
-                        <p className="font-medium">{expense.description}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {horse?.name} • {category?.name}
-                        </p>
+                        <span className="font-medium block">{cat.name}</span>
+                        {cat.budgetLimit && (
+                          <span className="text-xs text-muted-foreground">
+                            Budjetti: {cat.budgetLimit} €
+                          </span>
+                        )}
                       </div>
-                      <span className="font-bold">{expense.amount} €</span>
                     </div>
-                  );
-                })}
+                    <div className="text-right">
+                      <span className="font-bold block">{cat.total} €</span>
+                      {cat.budgetLimit && cat.budgetLimit > 0 && (
+                        <span className={
+                          cat.total > cat.budgetLimit
+                            ? "text-xs text-error"
+                            : "text-xs text-muted-foreground"
+                        }>
+                          {Math.round((cat.total / cat.budgetLimit) * 100)}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {/* Recent Expenses */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Viimeisimmät kulut</CardTitle>
+              <CardDescription>Viimeiset kirjatut kulut</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {expenses.length === 0 ? (
+                <p className="text-muted-foreground">Ei kirjattuja kuluja</p>
+              ) : (
+                <div className="space-y-2">
+                  {expenses.slice(0, 5).map((expense) => {
+                    const category = budgetCategories.find(
+                      (c) => c.id === expense.categoryId
+                    );
+                    const horse = horses.find((h) => h.id === expense.horseId);
+                    return (
+                      <div
+                        key={expense.id}
+                        className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-3 h-3 rounded-full shrink-0"
+                            style={{ backgroundColor: category?.color }}
+                          />
+                          <div>
+                            <p className="font-medium">{expense.description}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {horse?.name} • {category?.name}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="font-bold">{expense.amount} €</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       <Button className="w-full">
