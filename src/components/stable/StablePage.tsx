@@ -5,8 +5,9 @@ import { StableDashboard } from "./StableDashboard";
 import { HorseDetail } from "./HorseDetail";
 import { BudgetDashboard } from "./BudgetDashboard";
 import { StableCalendar } from "./StableCalendar";
+import { StableSettings } from "./StableSettings";
 
-type StableView = "dashboard" | "horse-detail" | "budget" | "calendar";
+type StableView = "dashboard" | "horse-detail" | "budget" | "calendar" | "settings";
 
 export function StablePage() {
   const [currentView, setCurrentView] = useState<StableView>("dashboard");
@@ -30,22 +31,30 @@ export function StablePage() {
     setCurrentView("calendar");
   };
 
+  const handleViewSettings = () => {
+    setCurrentView("settings");
+  };
+
   // Breadcrumb navigation
   const renderBreadcrumb = () => {
-    const items = [{ label: "TalliApp", onClick: () => {} }];
+    const items: Array<{ label: string; onClick?: () => void }> = [
+      { label: "TalliApp", onClick: () => {} }
+    ];
 
     if (currentView !== "dashboard") {
       items.push({ label: "Minun Talli", onClick: handleBackToDashboard });
     } else {
-      items.push({ label: "Minun Talli", onClick: undefined });
+      items.push({ label: "Minun Talli" });
     }
 
     if (currentView === "horse-detail" && selectedHorseId) {
-      items.push({ label: "Hevosen tiedot", onClick: undefined });
+      items.push({ label: "Hevosen tiedot" });
     } else if (currentView === "budget") {
-      items.push({ label: "Budjetti", onClick: undefined });
+      items.push({ label: "Budjetti" });
     } else if (currentView === "calendar") {
-      items.push({ label: "Kalenteri", onClick: undefined });
+      items.push({ label: "Kalenteri" });
+    } else if (currentView === "settings") {
+      items.push({ label: "Asetukset" });
     }
 
     return (
@@ -109,7 +118,12 @@ export function StablePage() {
             onViewHorse={handleViewHorse}
             onViewBudget={handleViewBudget}
             onViewCalendar={handleViewCalendar}
+            onViewSettings={handleViewSettings}
           />
+        )}
+
+        {currentView === "settings" && (
+          <StableSettings onBack={handleBackToDashboard} />
         )}
 
         {currentView === "horse-detail" && selectedHorseId && (

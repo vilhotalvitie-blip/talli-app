@@ -17,17 +17,20 @@ import { Button } from "@components/primitives/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@components/primitives/Card";
 import { cn } from "@lib/utils";
 import { useStableStore, seedDemoData, Horse as HorseType } from "@stores/stableStore";
+import { AddHorseModal } from "./AddHorseModal";
 
 interface StableDashboardProps {
   onViewHorse: (horseId: string) => void;
   onViewBudget: () => void;
   onViewCalendar: () => void;
+  onViewSettings: () => void;
 }
 
-export function StableDashboard({ onViewHorse, onViewBudget, onViewCalendar }: StableDashboardProps) {
+export function StableDashboard({ onViewHorse, onViewBudget, onViewCalendar, onViewSettings }: StableDashboardProps) {
   const { stable, horses, expenses, events, renameStable, togglePrivacy } = useStableStore();
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(stable.name);
+  const [addHorseOpen, setAddHorseOpen] = useState(false);
 
   // Seed demo data on first load
   useEffect(() => {
@@ -184,7 +187,7 @@ export function StableDashboard({ onViewHorse, onViewBudget, onViewCalendar }: S
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Hevoset</h2>
-          <Button size="sm">
+          <Button size="sm" onClick={() => setAddHorseOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Lisää hevonen
           </Button>
@@ -225,9 +228,15 @@ export function StableDashboard({ onViewHorse, onViewBudget, onViewCalendar }: S
           title="Tallin asetukset"
           description="Muokkaa tietoja"
           icon={Settings}
-          onClick={() => {}}
+          onClick={onViewSettings}
         />
       </div>
+
+      {/* Add Horse Modal */}
+      <AddHorseModal
+        open={addHorseOpen}
+        onClose={() => setAddHorseOpen(false)}
+      />
     </div>
   );
 }

@@ -1,8 +1,10 @@
 import { ArrowLeft, Plus, Calendar, Clock, CheckCircle2, Circle } from "lucide-react";
 import { Button } from "@components/primitives/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@components/primitives/Card";
+import { useState } from "react";
 import { useStableStore, CalendarEvent } from "@stores/stableStore";
 import { cn } from "@lib/utils";
+import { AddEventModal } from "./AddEventModal";
 
 interface StableCalendarProps {
   onBack: () => void;
@@ -30,6 +32,7 @@ const eventTypeColors: Record<string, string> = {
 
 export function StableCalendar({ onBack }: StableCalendarProps) {
   const { events, horses, completeEvent } = useStableStore();
+  const [addEventOpen, setAddEventOpen] = useState(false);
 
   // Sort events by date
   const sortedEvents = [...events].sort(
@@ -139,10 +142,16 @@ export function StableCalendar({ onBack }: StableCalendarProps) {
         </Card>
       )}
 
-      <Button className="w-full">
+      <Button className="w-full" onClick={() => setAddEventOpen(true)}>
         <Plus className="mr-2 h-4 w-4" />
         Lisää tapahtuma
       </Button>
+
+      {/* Add Event Modal */}
+      <AddEventModal
+        open={addEventOpen}
+        onClose={() => setAddEventOpen(false)}
+      />
     </div>
   );
 }

@@ -1,8 +1,10 @@
 import { ArrowLeft, Plus, Euro, PieChart, TrendingUp, Settings } from "lucide-react";
 import { Button } from "@components/primitives/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@components/primitives/Card";
+import { useState } from "react";
 import { useStableStore } from "@stores/stableStore";
 import { BudgetChart } from "./BudgetChart";
+import { AddExpenseModal } from "./AddExpenseModal";
 
 interface BudgetDashboardProps {
   onBack: () => void;
@@ -10,6 +12,7 @@ interface BudgetDashboardProps {
 
 export function BudgetDashboard({ onBack }: BudgetDashboardProps) {
   const { budgetCategories, expenses, horses } = useStableStore();
+  const [addExpenseOpen, setAddExpenseOpen] = useState(false);
 
   // Calculate totals per category
   const categoryTotals = budgetCategories.map((cat) => {
@@ -184,10 +187,16 @@ export function BudgetDashboard({ onBack }: BudgetDashboardProps) {
         </div>
       </div>
 
-      <Button className="w-full">
+      <Button className="w-full" onClick={() => setAddExpenseOpen(true)}>
         <Plus className="mr-2 h-4 w-4" />
         Lisää kulu
       </Button>
+
+      {/* Add Expense Modal */}
+      <AddExpenseModal
+        open={addExpenseOpen}
+        onClose={() => setAddExpenseOpen(false)}
+      />
     </div>
   );
 }
