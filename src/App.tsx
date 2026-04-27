@@ -17,6 +17,7 @@ import { cn } from "@lib/utils";
 import { BookingWizard } from "@components/booking/BookingWizard";
 import { Lesson } from "@components/booking/types";
 import { CalendarPicker } from "@components/ui/CalendarPicker";
+import { StablePage } from "@components/stable/StablePage";
 
 // Mock lesson/booking data (tunti/vuoro)
 const mockLessons = [
@@ -150,7 +151,7 @@ function ThemeToggle() {
   );
 }
 
-function Header() {
+function Header({ onGoToTalli }: { onGoToTalli?: () => void }) {
   const { isMobile, mobileNavOpen, toggleMobileNav } = useLayoutStore();
 
   return (
@@ -176,6 +177,14 @@ function Header() {
             >
               Tallihaku
             </a>
+            {onGoToTalli && (
+              <button
+                onClick={onGoToTalli}
+                className="text-sm font-medium hover:text-primary-500 transition-colors"
+              >
+                Minun Talli
+              </button>
+            )}
             <a
               href="#"
               className="text-sm font-medium hover:text-primary-500 transition-colors"
@@ -534,6 +543,7 @@ function Footer() {
 function App() {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
+  const [currentView, setCurrentView] = useState<"home" | "talli">("home");
 
   useEffect(() => {
     // Initialize theme
@@ -557,9 +567,14 @@ function App() {
     setSelectedLesson(null);
   };
 
+  // Show Stable Page
+  if (currentView === "talli") {
+    return <StablePage />;
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Header />
+      <Header onGoToTalli={() => setCurrentView("talli")} />
       <main>
         <Hero />
         <AvailableLessons onBook={handleBook} />
