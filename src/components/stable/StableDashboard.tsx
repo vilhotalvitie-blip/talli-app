@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@comp
 import { cn } from "@lib/utils";
 import { useStableStore, seedDemoData, Horse as HorseType } from "@stores/stableStore";
 import { AddHorseModal } from "./AddHorseModal";
+import { HorseAvatar } from "./HorseAvatar";
 
 interface StableDashboardProps {
   onViewHorse: (horseId: string) => void;
@@ -242,13 +243,13 @@ export function StableDashboard({ onViewHorse, onViewBudget, onViewCalendar, onV
 }
 
 function HorseCard({ horse, onClick }: { horse: HorseType; onClick: () => void }) {
-  const genderColors = {
+  const genderColors: Record<string, string> = {
     tamma: "bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300",
     ruuna: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
     ori: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
   };
 
-  const genderLabels = {
+  const genderLabels: Record<string, string> = {
     tamma: "Tamma",
     ruuna: "Ruuna",
     ori: "Ori",
@@ -261,7 +262,7 @@ function HorseCard({ horse, onClick }: { horse: HorseType; onClick: () => void }
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
-          <div>
+          <div className="flex-1">
             <span className={cn("inline-flex px-2 py-0.5 rounded-full text-xs font-medium", genderColors[horse.gender])}>
               {genderLabels[horse.gender]}
             </span>
@@ -270,7 +271,17 @@ function HorseCard({ horse, onClick }: { horse: HorseType; onClick: () => void }
             </CardTitle>
             <CardDescription>{horse.breed}</CardDescription>
           </div>
-          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          <div className="flex items-center gap-3">
+            <HorseAvatar
+              breed={horse.breed}
+              color={horse.color}
+              height={horse.height}
+              weight={horse.weight}
+              gender={horse.gender}
+              size="sm"
+            />
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0">
