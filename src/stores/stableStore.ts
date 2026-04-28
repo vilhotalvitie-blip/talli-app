@@ -57,6 +57,26 @@ export interface CalendarEvent {
   reminderDays: number;
 }
 
+export interface ShiftType {
+  id: string;
+  name: string;
+  startTime: string;
+  endTime: string;
+  color: string;
+  description?: string;
+  isDefault: boolean;
+}
+
+export interface ShiftAssignment {
+  id: string;
+  shiftTypeId: string;
+  personName: string;
+  dayOfWeek: number; // 0-6 (Sunday-Saturday)
+  isRecurring: boolean;
+  weekDate?: string; // For non-recurring: specific date
+  notes?: string;
+}
+
 export interface StableSettings {
   id: string;
   name: string;
@@ -97,6 +117,15 @@ export interface StableState {
   updateEvent: (id: string, updates: Partial<CalendarEvent>) => void;
   removeEvent: (id: string) => void;
   completeEvent: (id: string) => void;
+  
+  // Actions - Shifts
+  shiftTypes: ShiftType[];
+  shiftAssignments: ShiftAssignment[];
+  addShiftType: (type: Omit<ShiftType, "id">) => void;
+  updateShiftType: (id: string, updates: Partial<ShiftType>) => void;
+  removeShiftType: (id: string) => void;
+  addShiftAssignment: (assignment: Omit<ShiftAssignment, "id">) => void;
+  removeShiftAssignment: (id: string) => void;
 }
 
 // Default budget categories
@@ -106,6 +135,37 @@ const defaultCategories: BudgetCategory[] = [
   { id: "cat-3", name: "Rehu", color: "#22c55e", isDefault: true },
   { id: "cat-4", name: "Varusteet", color: "#3b82f6", isDefault: true },
   { id: "cat-5", name: "Vakuutus", color: "#8b5cf6", isDefault: true },
+];
+
+// Default shift types
+const defaultShiftTypes: ShiftType[] = [
+  { 
+    id: "shift-morning", 
+    name: "Aamutalli", 
+    startTime: "06:00", 
+    endTime: "09:00", 
+    color: "#3b82f6", 
+    description: "Aamuruokinta ja ulostus",
+    isDefault: true 
+  },
+  { 
+    id: "shift-day", 
+    name: "Päivätalli", 
+    startTime: "09:00", 
+    endTime: "17:00", 
+    color: "#f59e0b", 
+    description: "Päivän hoidot ja valmennukset",
+    isDefault: true 
+  },
+  { 
+    id: "shift-evening", 
+    name: "Iltatalli", 
+    startTime: "17:00", 
+    endTime: "20:00", 
+    color: "#6366f1", 
+    description: "Ilataruokinta ja tallin sulkeminen",
+    isDefault: true 
+  },
 ];
 
 // Generate unique ID
@@ -125,6 +185,8 @@ export const useStableStore = create<StableState>()(
       budgetCategories: defaultCategories,
       expenses: [],
       events: [],
+      shiftTypes: defaultShiftTypes,
+      shiftAssignments: [],
 
       // Stable actions
       renameStable: (name) =>
@@ -213,6 +275,37 @@ export const useStableStore = create<StableState>()(
           events: state.events.map((e) =>
             e.id === id ? { ...e, completed: true } : e
           ),
+        })),
+      
+      // Shift type actions
+      addShiftType: (type) =>
+        set((state) => ({
+          shiftTypes: [...state.shiftTypes, { ...type, id: generateId() }],
+        })),
+      
+      updateShiftType: (id, updates) =>
+        set((state) => ({
+          shiftTypes: state.shiftTypes.map((t) =>
+            t.id === id ? { ...t, ...updates } : t
+          ),
+        })),
+      
+      removeShiftType: (id) =>
+        set((state) => ({
+          shiftTypes: state.shiftTypes.filter((t) => t.id !== id),
+          // Also remove related assignments
+          shiftAssignments: state.shiftAssignments.filter((a) => a.shiftTypeId !== id),
+        })),
+      
+      // Shift assignment actions
+      addShiftAssignment: (assignment) =>
+        set((state) => ({
+          shiftAssignments: [...state.shiftAssignments, { ...assignment, id: generateId() }],
+        })),
+      
+      removeShiftAssignment: (id) =>
+        set((state) => ({
+          shiftAssignments: state.shiftAssignments.filter((a) => a.id !== id),
         })),
     }),
     {

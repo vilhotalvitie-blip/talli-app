@@ -14,7 +14,8 @@ import {
   Edit2,
   X,
   Check,
-  Heart
+  Heart,
+  Users
 } from "lucide-react";
 import { Button } from "@components/primitives/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@components/primitives/Card";
@@ -29,9 +30,10 @@ interface StableDashboardProps {
   onViewBudget: () => void;
   onViewCalendar: () => void;
   onViewSettings: () => void;
+  onViewShifts: () => void;
 }
 
-export function StableDashboard({ onViewHorse, onViewBudget, onViewCalendar, onViewSettings }: StableDashboardProps) {
+export function StableDashboard({ onViewHorse, onViewBudget, onViewCalendar, onViewSettings, onViewShifts }: StableDashboardProps) {
   const { stable, horses, expenses, events, renameStable, togglePrivacy } = useStableStore();
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(stable.name);
@@ -240,7 +242,7 @@ export function StableDashboard({ onViewHorse, onViewBudget, onViewCalendar, onV
       </div>
 
       {/* Quick Actions */}
-      <div className="grid sm:grid-cols-3 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <QuickActionCard
           title="Lisää kulu"
           description="Kirjaa uusi tallikulu"
@@ -252,6 +254,12 @@ export function StableDashboard({ onViewHorse, onViewBudget, onViewCalendar, onV
           description="Merkitse kalenteriin"
           icon={Calendar}
           onClick={onViewCalendar}
+        />
+        <QuickActionCard
+          title="Tallivuorot"
+          description="Vuorojen jakaminen"
+          icon={Users}
+          onClick={onViewShifts}
         />
         <QuickActionCard
           title="Tallin asetukset"

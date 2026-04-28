@@ -9,8 +9,9 @@ import { HorseDetail } from "./HorseDetail";
 import { BudgetDashboard } from "./BudgetDashboard";
 import { StableCalendar } from "./StableCalendar";
 import { StableSettings } from "./StableSettings";
+import { ShiftDashboard } from "./ShiftDashboard";
 
-type StableView = "dashboard" | "horse-detail" | "budget" | "calendar" | "settings";
+type StableView = "dashboard" | "horse-detail" | "budget" | "calendar" | "settings" | "shifts";
 
 export function StablePage() {
   const [currentView, setCurrentView] = useState<StableView>("dashboard");
@@ -38,6 +39,10 @@ export function StablePage() {
     setCurrentView("settings");
   };
 
+  const handleViewShifts = () => {
+    setCurrentView("shifts");
+  };
+
   // Breadcrumb navigation
   const renderBreadcrumb = () => {
     const items: Array<{ label: string; onClick?: () => void }> = [
@@ -58,6 +63,8 @@ export function StablePage() {
       items.push({ label: "Kalenteri" });
     } else if (currentView === "settings") {
       items.push({ label: "Asetukset" });
+    } else if (currentView === "shifts") {
+      items.push({ label: "Tallivuorot" });
     }
 
     return (
@@ -130,7 +137,20 @@ export function StablePage() {
                 onViewBudget={handleViewBudget}
                 onViewCalendar={handleViewCalendar}
                 onViewSettings={handleViewSettings}
+                onViewShifts={handleViewShifts}
               />
+            </motion.div>
+          )}
+
+          {currentView === "shifts" && (
+            <motion.div
+              key="shifts"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            >
+              <ShiftDashboard onBack={handleBackToDashboard} />
             </motion.div>
           )}
 
