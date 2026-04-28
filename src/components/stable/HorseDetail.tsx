@@ -43,21 +43,25 @@ export function HorseDetail({ horseId, onBack }: HorseDetailProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start gap-4">
-        <HorseAvatar
-          breed={horse.breed}
-          color={horse.color}
-          height={horse.height}
-          weight={horse.weight}
-          gender={horse.gender}
-          size="lg"
-        />
+      {/* Header with Interactive Avatar */}
+      <div className="flex flex-col md:flex-row items-start gap-6">
+        <div className="flex flex-col items-center gap-2">
+          <div className="p-4 bg-muted rounded-xl shrink-0">
+            <HorseAvatar 
+              horse={horse} 
+              size="lg" 
+              interactive={true}
+              autoRotate={false}
+            />
+          </div>
+          <span className="text-xs text-muted-foreground">Vedä pyörittääksesi</span>
+        </div>
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", genderColors[horse.gender])}>
               {genderLabels[horse.gender]}
             </span>
+            <span className="text-sm text-muted-foreground">{horse.color}</span>
           </div>
           <h1 className="text-2xl font-bold">{horse.name}</h1>
           <p className="text-muted-foreground">{horse.breed}</p>
@@ -66,10 +70,6 @@ export function HorseDetail({ horseId, onBack }: HorseDetailProps) {
             <div>
               <span className="text-muted-foreground">Ikä</span>
               <p className="font-medium">{horse.age} vuotta</p>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Väri</span>
-              <p className="font-medium">{horse.color}</p>
             </div>
             <div>
               <span className="text-muted-foreground">Säkäkorkeus</span>

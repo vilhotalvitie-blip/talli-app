@@ -243,13 +243,13 @@ export function StableDashboard({ onViewHorse, onViewBudget, onViewCalendar, onV
 }
 
 function HorseCard({ horse, onClick }: { horse: HorseType; onClick: () => void }) {
-  const genderColors: Record<string, string> = {
+  const genderColors = {
     tamma: "bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300",
     ruuna: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
     ori: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
   };
 
-  const genderLabels: Record<string, string> = {
+  const genderLabels = {
     tamma: "Tamma",
     ruuna: "Ruuna",
     ori: "Ori",
@@ -260,27 +260,28 @@ function HorseCard({ horse, onClick }: { horse: HorseType; onClick: () => void }
       className="cursor-pointer hover:shadow-md transition-shadow group"
       onClick={onClick}
     >
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <span className={cn("inline-flex px-2 py-0.5 rounded-full text-xs font-medium", genderColors[horse.gender])}>
-              {genderLabels[horse.gender]}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className={cn("inline-flex px-2 py-0.5 rounded-full text-xs font-medium", genderColors[horse.gender])}>
+                {genderLabels[horse.gender]}
+              </span>
+              <span className="text-xs text-muted-foreground">{horse.color}</span>
+            </div>
             <CardTitle className="text-lg mt-2 group-hover:text-primary-500 transition-colors">
               {horse.name}
             </CardTitle>
             <CardDescription>{horse.breed}</CardDescription>
           </div>
-          <div className="flex items-center gap-3">
-            <HorseAvatar
-              breed={horse.breed}
-              color={horse.color}
-              height={horse.height}
-              weight={horse.weight}
-              gender={horse.gender}
-              size="sm"
+          <div className="flex flex-col items-center gap-1">
+            <HorseAvatar 
+              horse={horse} 
+              size="sm" 
+              autoRotate={true}
+              className="mr-2"
             />
-            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </div>
         </div>
       </CardHeader>

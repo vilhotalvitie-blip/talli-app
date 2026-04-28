@@ -1,254 +1,225 @@
+import { useState, useRef, useCallback, useEffect } from "react";
+import { Horse } from "@stores/stableStore";
+import { getBreedSpriteId, getBreedSprite, BreedId } from "./horse-breeds";
+import { getHorseColor, getHorseColorByName, HorseColor } from "./horse-colors";
 import { cn } from "@lib/utils";
-import {
-  getBreedProportions,
-  getHorseColor,
-  calculateScale,
-  calculateWeightFactor,
-  type HorseColorScheme,
-  type BreedProportions,
-} from "./horse-avatar-utils";
 
 interface HorseAvatarProps {
-  breed: string;
-  color: string;
-  height: number; // in cm (säkäkorkeus)
-  weight: number; // in kg
-  gender?: "tamma" | "ruuna" | "ori" | string;
+  horse: Horse;
   size?: "sm" | "md" | "lg";
+  interactive?: boolean;
+  autoRotate?: boolean;
   className?: string;
-  showSizeIndicator?: boolean;
+  onColorChange?: (colorId: string) => void;
+}
+
+// Size configurations
+const sizeConfig = {
+  sm: { width: 60, height: 60, scale: 0.6, viewBox: "0 0 200 200" },
+  md: { width: 120, height: 120, scale: 1.0, viewBox: "0 0 200 200" },
+  lg: { width: 200, height: 200, scale: 1.5, viewBox: "0 0 200 200" },
+};
+
+// Calculate rotation from height (50-200cm) → scale (0.6-1.4x)
+function calculateSizeScale(height: number): number {
+  const minHeight = 80;  // Small pony
+  const maxHeight = 180; // Large warmblood
+  const minScale = 0.75;
+  const maxScale = 1.25;
+  
+  const clampedHeight = Math.max(minHeight, Math.min(maxHeight, height));
+  const normalized = (clampedHeight - minHeight) / (maxHeight - minHeight);
+  return minScale + normalized * (maxScale - minScale);
 }
 
 export function HorseAvatar({
-  breed,
-  color,
-  height,
-  weight,
-  gender,
+  horse,
   size = "md",
+  interactive = false,
+  autoRotate = false,
   className,
-  showSizeIndicator = false,
 }: HorseAvatarProps) {
-  // Get color scheme and breed proportions
-  const colorScheme = getHorseColor(color);
-  const proportions = getBreedProportions(breed);
+  const [rotation, setRotation] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [autoRotating, setAutoRotating] = useState(autoRotate);
+  const dragStartX = useRef(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Calculate scaling
-  const heightScale = calculateScale(height);
-  const weightFactor = calculateWeightFactor(weight);
-  const overallScale = heightScale * weightFactor;
+  // Get breed sprite
+  const breedId = getBreedSpriteId(horse.breed) as BreedId;
+  const breedSprite = getBreedSprite(breedId);
 
-  // Size classes
-  const sizeClasses = {
-    sm: "w-16 h-16",
-    md: "w-24 h-24",
-    lg: "w-40 h-40",
-  };
+  // Get color - try to find by stored color ID or name
+  const horseColor: HorseColor = horse.color.startsWith("#") 
+    ? { id: "custom", name: "Custom", baseColor: horse.color, maneColor: horse.color }
+    : getHorseColorByName(horse.color) || getHorseColor(horse.color);
 
+  // Calculate size scale based on horse height
+  const sizeScale = calculateSizeScale(horse.height);
+  const config = sizeConfig[size];
+
+  // Determine which sprite to show based on rotation (8 angles)
+  const getSpriteAngle = useCallback(() => {
+    const normalizedRotation = ((rotation % 360) + 360) % 360;
+    const angleIndex = Math.round(normalizedRotation / 45) % 8;
+    const angles = [0, 45, 90, 135, 180, 225, 270, 315];
+    return angles[angleIndex] as 0 | 45 | 90 | 135 | 180 | 225 | 270 | 315;
+  }, [rotation]);
+
+  const currentAngle = getSpriteAngle();
+  const spriteSvg = breedSprite.sprites[currentAngle];
+
+  // Auto-rotate animation
+  useEffect(() => {
+    if (!autoRotating || isDragging) return;
+    
+    let animationId: number;
+    let lastTime = performance.now();
+    
+    const animate = (time: number) => {
+      const delta = time - lastTime;
+      lastTime = time;
+      
+      setRotation(prev => (prev + delta * 0.05) % 360);
+      animationId = requestAnimationFrame(animate);
+    };
+    
+    animationId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationId);
+  }, [autoRotating, isDragging]);
+
+  // Drag handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (!interactive) return;
+    e.preventDefault();
+    setIsDragging(true);
+    setAutoRotating(false);
+    dragStartX.current = e.clientX;
+  }, [interactive]);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!interactive) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+    setIsDragging(true);
+    setAutoRotating(false);
+    dragStartX.current = touch.clientX;
+  }, [interactive]);
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - dragStartX.current;
+      dragStartX.current = e.clientX;
+      setRotation(prev => prev + deltaX * 0.5);
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      if (!touch) return;
+      const deltaX = touch.clientX - dragStartX.current;
+      dragStartX.current = touch.clientX;
+      setRotation(prev => prev + deltaX * 0.5);
+    };
+
+    const handleEnd = () => {
+      setIsDragging(false);
+      if (autoRotate) {
+        setTimeout(() => setAutoRotating(true), 1000);
+      }
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleEnd);
+    window.addEventListener("touchmove", handleTouchMove);
+    window.addEventListener("touchend", handleEnd);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleEnd);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleEnd);
+    };
+  }, [isDragging, autoRotate]);
+
+  // Apply color to SVG via CSS custom properties
+  const colorStyles: React.CSSProperties = {
+    color: horseColor.baseColor,
+    "--horse-base": horseColor.baseColor,
+    "--horse-mane": horseColor.maneColor,
+    "--horse-dark": adjustColor(horseColor.baseColor, -30),
+    "--horse-light": adjustColor(horseColor.baseColor, 30),
+    width: config.width,
+    height: config.height,
+    transform: `scale(${config.scale * sizeScale})`,
+    cursor: interactive ? (isDragging ? "grabbing" : "grab") : "default",
+  } as React.CSSProperties;
 
   return (
-    <div className={cn("relative", sizeClasses[size], className)}>
+    <div
+      ref={containerRef}
+      className={cn(
+        "relative inline-flex items-center justify-center",
+        interactive && "select-none touch-none",
+        className
+      )}
+      style={{
+        width: config.width * config.scale * sizeScale,
+        height: config.height * config.scale * sizeScale,
+      }}
+      onMouseDown={handleMouseDown}
+      onTouchStart={handleTouchStart}
+    >
+      {/* Shadow/ground indicator */}
+      <div
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 rounded-full bg-black/10 dark:bg-white/5"
+        style={{
+          width: config.width * config.scale * sizeScale * 0.8,
+          height: config.width * config.scale * sizeScale * 0.15,
+        }}
+      />
+      
+      {/* SVG Avatar */}
       <svg
-        viewBox="0 0 100 100"
-        className="w-full h-full"
-        style={{ transform: `scale(${overallScale})` }}
-      >
-        <defs>
-          {/* Gradient for body depth */}
-          <linearGradient id="bodyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={colorScheme.body} stopOpacity="0.9" />
-            <stop offset="100%" stopColor={colorScheme.body} stopOpacity="1" />
-          </linearGradient>
-          {/* Gradient for mane/tail */}
-          <linearGradient id="maneGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={colorScheme.mane} stopOpacity="0.8" />
-            <stop offset="100%" stopColor={colorScheme.mane} stopOpacity="1" />
-          </linearGradient>
-        </defs>
+        viewBox="0 0 200 200"
+        className={cn(
+          "absolute transition-opacity duration-100",
+          isDragging && "opacity-90"
+        )}
+        style={colorStyles}
+        dangerouslySetInnerHTML={{ __html: spriteSvg }}
+      />
 
-        {/* Render the horse based on breed proportions */}
-        <g transform={`translate(${50 - 50 * overallScale}, ${50 - 50 * overallScale})`}>
-          <HorseSVG
-            colorScheme={colorScheme}
-            proportions={proportions}
-            gender={gender}
-          />
-        </g>
-      </svg>
-
-      {/* Size indicator (optional) */}
-      {showSizeIndicator && (
-        <div className="absolute -bottom-1 -right-1 bg-background border rounded-full px-1.5 py-0.5 text-[10px] font-medium shadow-sm">
-          {height}cm
+      {/* Interactive hint */}
+      {interactive && !autoRotating && !isDragging && (
+        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-muted-foreground whitespace-nowrap">
+          Vedä pyörittääksesi
         </div>
+      )}
+
+      {/* Drag overlay for better interaction */}
+      {interactive && (
+        <div className="absolute inset-0 z-10" />
       )}
     </div>
   );
 }
 
-// SVG horse component with breed-specific rendering
-interface HorseSVGProps {
-  colorScheme: HorseColorScheme;
-  proportions: BreedProportions;
-  gender?: string;
+// Color adjustment utility
+function adjustColor(hex: string, percent: number): string {
+  const num = parseInt(hex.replace("#", ""), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = (num >> 16) + amt;
+  const G = ((num >> 8) & 0x00ff) + amt;
+  const B = (num & 0x0000ff) + amt;
+  return "#" + (
+    0x1000000 +
+    (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+    (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
+    (B < 255 ? (B < 1 ? 0 : B) : 255)
+  ).toString(16).slice(1);
 }
 
-function HorseSVG({ colorScheme, proportions, gender }: HorseSVGProps) {
-  const { legLength, neckLength, bodyWidth, headSize } = proportions;
-
-  // Base coordinates (generic warmblood proportions)
-  // Head
-  const headY = 20 * headSize;
-  const headX = 75;
-  
-  // Neck
-  const neckBaseX = 65;
-  const neckBaseY = 35;
-  const neckTopX = 75;
-  const neckTopY = headY + 10;
-  
-  // Body
-  const shoulderX = 55;
-  const shoulderY = 40;
-  const hipX = 20;
-  const hipY = 40;
-  const bellyY = 55;
-  
-  // Legs
-  const frontLegX = 55;
-  const backLegX = 25;
-  const groundY = 85;
-  const kneeY = groundY - 25 * legLength;
-  const hockY = groundY - 15 * legLength;
-
-  // Apply breed proportions
-  const adjustedNeckTopY = neckTopY + (1 - neckLength) * 10;
-  const adjustedHipY = hipY + (1 - bodyWidth) * 5;
-  const adjustedBellyY = bellyY + (bodyWidth - 1) * 5;
-  const adjustedGroundY = groundY + (1 - legLength) * 10;
-
-  // Spotted pattern (for pinto/piebald)
-  const hasPattern = colorScheme.pattern === "spotted";
-
-  return (
-    <g>
-      {/* Tail */}
-      <path
-        d={`M ${hipX - 5} ${adjustedHipY - 5} 
-            Q ${hipX - 15} ${adjustedHipY + 10} ${hipX - 10} ${adjustedGroundY - 10}
-            Q ${hipX - 5} ${adjustedHipY + 15} ${hipX} ${adjustedHipY}`}
-        fill={colorScheme.tail}
-        stroke={colorScheme.tail}
-        strokeWidth="3"
-      />
-
-      {/* Back legs */}
-      {/* Back left leg (far side - darker) */}
-      <path
-        d={`M ${backLegX - 2} ${adjustedBellyY} 
-            L ${backLegX - 3} ${hockY + 5} 
-            L ${backLegX - 3} ${adjustedGroundY - 3}
-            L ${backLegX + 1} ${adjustedGroundY - 3}
-            L ${backLegX + 1} ${hockY + 5}
-            L ${backLegX + 2} ${adjustedBellyY}`}
-        fill={colorScheme.body}
-        opacity="0.7"
-      />
-      {/* Back right leg (near side) */}
-      <path
-        d={`M ${backLegX + 2} ${adjustedBellyY} 
-            L ${backLegX + 1} ${hockY} 
-            L ${backLegX + 1} ${adjustedGroundY}
-            L ${backLegX + 5} ${adjustedGroundY}
-            L ${backLegX + 5} ${hockY}
-            L ${backLegX + 6} ${adjustedBellyY}`}
-        fill={colorScheme.body}
-      />
-      {/* Hoof - back */}
-      <rect x={backLegX + 1} y={adjustedGroundY - 2} width="4" height="3" fill={colorScheme.hoof} rx="1" />
-
-      {/* Front legs */}
-      {/* Front left leg (far side - darker) */}
-      <path
-        d={`M ${frontLegX - 2} ${adjustedBellyY} 
-            L ${frontLegX - 3} ${kneeY + 5} 
-            L ${frontLegX - 3} ${adjustedGroundY - 3}
-            L ${frontLegX + 1} ${adjustedGroundY - 3}
-            L ${frontLegX + 1} ${kneeY + 5}
-            L ${frontLegX + 2} ${adjustedBellyY}`}
-        fill={colorScheme.body}
-        opacity="0.7"
-      />
-      {/* Front right leg (near side) */}
-      <path
-        d={`M ${frontLegX + 2} ${adjustedBellyY} 
-            L ${frontLegX + 1} ${kneeY} 
-            L ${frontLegX + 1} ${adjustedGroundY}
-            L ${frontLegX + 5} ${adjustedGroundY}
-            L ${frontLegX + 5} ${kneeY}
-            L ${frontLegX + 6} ${adjustedBellyY}`}
-        fill={colorScheme.body}
-      />
-      {/* Hoof - front */}
-      <rect x={frontLegX + 1} y={adjustedGroundY - 2} width="4" height="3" fill={colorScheme.hoof} rx="1" />
-
-      {/* Body */}
-      <path
-        d={`M ${shoulderX} ${shoulderY}
-            C ${shoulderX - 10} ${shoulderY - 10}, ${neckBaseX - 5} ${adjustedNeckTopY + 10}, ${neckBaseX} ${adjustedNeckTopY}
-            L ${neckTopX} ${adjustedNeckTopY}
-            L ${headX} ${headY}
-            L ${headX + 8} ${headY + 8}
-            L ${headX + 5} ${headY + 12}
-            L ${neckTopX - 2} ${adjustedNeckTopY + 15}
-            L ${neckBaseX - 3} ${neckBaseY}
-            C ${neckBaseX - 5} ${shoulderY + 5}, ${shoulderX + 5} ${shoulderY + 10}, ${shoulderX} ${shoulderY + 20}
-            L ${shoulderX - 10} ${adjustedBellyY - 5}
-            L ${hipX + 10} ${adjustedBellyY - 5}
-            L ${hipX} ${adjustedHipY}
-            C ${hipX - 5} ${hipY - 5}, ${hipX + 5} ${hipY - 10}, ${hipX + 10} ${hipY}
-            Z`}
-        fill="url(#bodyGradient)"
-      />
-
-      {/* Spotted pattern overlay (for pinto) */}
-      {hasPattern && (
-        <>
-          <ellipse cx="45" cy="45" rx="12" ry="8" fill={colorScheme.baseBody} opacity="0.9" />
-          <ellipse cx="30" cy="50" rx="8" ry="6" fill={colorScheme.baseBody} opacity="0.9" />
-          <ellipse cx="60" cy="35" rx="6" ry="4" fill={colorScheme.baseBody} opacity="0.9" />
-        </>
-      )}
-
-      {/* Mane */}
-      <path
-        d={`M ${neckTopX - 3} ${adjustedNeckTopY + 5}
-            Q ${neckBaseX} ${neckBaseY - 5} ${neckBaseX - 2} ${neckBaseY + 5}
-            L ${neckBaseX - 5} ${neckBaseY + 3}
-            Q ${neckTopX - 6} ${adjustedNeckTopY + 8} ${neckTopX - 5} ${adjustedNeckTopY + 2}`}
-        fill={colorScheme.mane}
-        stroke={colorScheme.mane}
-        strokeWidth="2"
-      />
-
-      {/* Eye */}
-      <circle cx={headX + 3} cy={headY + 4} r="1.5" fill="#1a1a1a" />
-      <circle cx={headX + 3.3} cy={headY + 3.8} r="0.5" fill="#fff" />
-
-      {/* Ear */}
-      <ellipse cx={headX + 2} cy={headY - 2} rx="1.5" ry="3" fill={colorScheme.body} />
-      <ellipse cx={headX + 5} cy={headY - 1} rx="1.5" ry="2.5" fill={colorScheme.body} />
-
-      {/* Gender indicator - subtle styling */}
-      {gender === "tamma" && (
-        <circle cx={hipX - 8} cy={adjustedBellyY - 8} r="3" fill="#ec4899" opacity="0.6" />
-      )}
-      {gender === "ruuna" && (
-        <circle cx={hipX - 8} cy={adjustedBellyY - 8} r="3" fill="#3b82f6" opacity="0.6" />
-      )}
-      {gender === "ori" && (
-        <circle cx={hipX - 8} cy={adjustedBellyY - 8} r="3" fill="#f59e0b" opacity="0.6" />
-      )}
-    </g>
-  );
-}
+// Re-export from horse-colors for convenience
+export { horseColors, getHorseColor, getHorseColorByName } from "./horse-colors";
