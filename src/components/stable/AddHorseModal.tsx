@@ -18,8 +18,6 @@ import {
   SelectValue,
 } from "@components/primitives/Select";
 import { useStableStore, Gender } from "@stores/stableStore";
-import { horseColors } from "./horse-colors";
-import { HorseAvatar } from "./HorseAvatar";
 
 interface AddHorseModalProps {
   open: boolean;
@@ -168,67 +166,15 @@ export function AddHorseModal({ open, onClose }: AddHorseModalProps) {
             {errors["age"] && <p className="text-sm text-error">{errors["age"]}</p>}
           </div>
 
-          {/* Color with Avatar Preview */}
+          {/* Color */}
           <div className="space-y-2">
-            <Label>Väri</Label>
-            <div className="flex gap-4 items-start">
-              {/* Color Grid */}
-              <div className="flex-1">
-                <div className="grid grid-cols-5 gap-2">
-                  {horseColors.map((color) => (
-                    <button
-                      key={color.id}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, color: color.name })}
-                      className={`w-full aspect-square rounded-lg border-2 transition-all ${
-                        formData.color === color.name
-                          ? "border-primary-500 ring-2 ring-primary-200"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                      style={{ backgroundColor: color.baseColor }}
-                      title={color.name}
-                    >
-                      {formData.color === color.name && (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <div className="w-3 h-3 bg-white rounded-full shadow-sm" />
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {formData.color || "Valitse väri"}
-                </p>
-              </div>
-              
-              {/* Avatar Preview */}
-              <div className="flex flex-col items-center gap-2">
-                <div className="p-3 bg-muted rounded-xl">
-                  {formData.name && formData.breed && formData.height ? (
-                    <HorseAvatar
-                      horse={{
-                        id: "preview",
-                        name: formData.name,
-                        breed: formData.breed,
-                        age: parseInt(formData.age) || 5,
-                        gender: (formData.gender as Gender) || "ruuna",
-                        color: formData.color || "Rautias",
-                        height: parseInt(formData.height) || 150,
-                        weight: parseInt(formData.weight) || 400,
-                        notes: "",
-                      }}
-                      size="md"
-                      autoRotate={true}
-                    />
-                  ) : (
-                    <div className="w-[72px] h-[72px] flex items-center justify-center text-muted-foreground text-xs text-center">
-                      Täytä<br />tiedot
-                    </div>
-                  )}
-                </div>
-                <span className="text-xs text-muted-foreground">Esikatselu</span>
-              </div>
-            </div>
+            <Label htmlFor="color">Väri</Label>
+            <Input
+              id="color"
+              value={formData.color}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, color: e.target.value })}
+              placeholder="Esim. Rautias"
+            />
           </div>
 
           {/* Height & Weight */}

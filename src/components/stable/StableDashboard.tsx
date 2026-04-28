@@ -260,29 +260,23 @@ function HorseCard({ horse, onClick }: { horse: HorseType; onClick: () => void }
       className="cursor-pointer hover:shadow-md transition-shadow group"
       onClick={onClick}
     >
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <span className={cn("inline-flex px-2 py-0.5 rounded-full text-xs font-medium", genderColors[horse.gender])}>
-                {genderLabels[horse.gender]}
-              </span>
-              <span className="text-xs text-muted-foreground">{horse.color}</span>
+            <div className="flex items-center gap-3">
+              <HorseAvatar horse={horse} size="sm" className="shrink-0" />
+              <div>
+                <span className={cn("inline-flex px-2 py-0.5 rounded-full text-xs font-medium", genderColors[horse.gender])}>
+                  {genderLabels[horse.gender]}
+                </span>
+                <CardTitle className="text-lg mt-1 group-hover:text-primary-500 transition-colors">
+                  {horse.name}
+                </CardTitle>
+                <CardDescription className="text-xs">{horse.breed}</CardDescription>
+              </div>
             </div>
-            <CardTitle className="text-lg mt-2 group-hover:text-primary-500 transition-colors">
-              {horse.name}
-            </CardTitle>
-            <CardDescription>{horse.breed}</CardDescription>
           </div>
-          <div className="flex flex-col items-center gap-1">
-            <HorseAvatar 
-              horse={horse} 
-              size="sm" 
-              autoRotate={true}
-              className="mr-2"
-            />
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </div>
+          <ChevronRight className="h-5 w-5 text-muted-foreground" />
         </div>
       </CardHeader>
       <CardContent className="pt-0">

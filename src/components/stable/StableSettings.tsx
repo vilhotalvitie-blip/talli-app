@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@comp
 import { Input } from "@components/primitives/Input";
 import { Label } from "@components/primitives/Label";
 import { useStableStore } from "@stores/stableStore";
-import { cn } from "@lib/utils";
+import { HorseAvatar } from "./HorseAvatar";
 
 interface StableSettingsProps {
   onBack: () => void;
@@ -135,11 +135,14 @@ export function StableSettings({ onBack }: StableSettingsProps) {
                   key={horse.id}
                   className="flex items-center justify-between p-3 bg-muted rounded-lg"
                 >
-                  <div>
-                    <p className="font-medium">{horse.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {horse.breed} • {horse.age} v
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <HorseAvatar horse={horse} size="sm" />
+                    <div>
+                      <p className="font-medium">{horse.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {horse.breed} • {horse.age} v
+                      </p>
+                    </div>
                   </div>
                   <Button
                     variant="ghost"
