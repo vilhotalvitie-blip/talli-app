@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { ArrowLeft, Plus, Euro, PieChart, TrendingUp, Settings } from "lucide-react";
 import { Button } from "@components/primitives/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@components/primitives/Card";
@@ -5,6 +8,8 @@ import { useState } from "react";
 import { useStableStore } from "@stores/stableStore";
 import { BudgetChart } from "./BudgetChart";
 import { AddExpenseModal } from "./AddExpenseModal";
+import { CountUp } from "@components/animation/CountUp";
+import { StaggerContainer, StaggerItem } from "@components/animation/StaggerContainer";
 
 interface BudgetDashboardProps {
   onBack: () => void;
@@ -44,7 +49,9 @@ export function BudgetDashboard({ onBack }: BudgetDashboardProps) {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Kokonaiskulut</p>
-                <p className="text-2xl font-bold">{totalExpenses} €</p>
+                <p className="text-2xl font-bold">
+                  <CountUp end={totalExpenses} duration={1.2} suffix=" €" decimals={2} />
+                </p>
               </div>
             </div>
           </CardContent>
@@ -108,38 +115,46 @@ export function BudgetDashboard({ onBack }: BudgetDashboardProps) {
               <CardDescription>Kulut kategorioittain samoilla väreillä</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid sm:grid-cols-2 gap-4">
+              <StaggerContainer className="space-y-2">
                 {categoryTotals.map((cat) => (
-                  <div key={cat.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: cat.color }}
-                      />
-                      <div>
-                        <span className="font-medium block">{cat.name}</span>
-                        {cat.budgetLimit && (
-                          <span className="text-xs text-muted-foreground">
-                            Budjetti: {cat.budgetLimit} €
+                  <StaggerItem key={cat.id}>
+                    <motion.div 
+                      className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                      whileHover={{ scale: 1.01, x: 4 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <motion.div
+                          className="w-4 h-4 rounded-full"
+                          style={{ backgroundColor: cat.color }}
+                          whileHover={{ scale: 1.3 }}
+                          transition={{ type: "spring", stiffness: 400 }}
+                        />
+                        <div>
+                          <span className="font-medium block">{cat.name}</span>
+                          {cat.budgetLimit && (
+                            <span className="text-xs text-muted-foreground">
+                              Budjetti: {cat.budgetLimit} €
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-bold block">{cat.total} €</span>
+                        {cat.budgetLimit && cat.budgetLimit > 0 && (
+                          <span className={
+                            cat.total > cat.budgetLimit
+                              ? "text-xs text-error"
+                              : "text-xs text-muted-foreground"
+                          }>
+                            {Math.round((cat.total / cat.budgetLimit) * 100)}%
                           </span>
                         )}
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-bold block">{cat.total} €</span>
-                      {cat.budgetLimit && cat.budgetLimit > 0 && (
-                        <span className={
-                          cat.total > cat.budgetLimit
-                            ? "text-xs text-error"
-                            : "text-xs text-muted-foreground"
-                        }>
-                          {Math.round((cat.total / cat.budgetLimit) * 100)}%
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                    </motion.div>
+                  </StaggerItem>
                 ))}
-              </div>
+              </StaggerContainer>
             </CardContent>
           </Card>
 
@@ -151,46 +166,62 @@ export function BudgetDashboard({ onBack }: BudgetDashboardProps) {
             </CardHeader>
             <CardContent>
               {expenses.length === 0 ? (
-                <p className="text-muted-foreground">Ei kirjattuja kuluja</p>
+                <motion.p 
+                  className="text-muted-foreground"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  Ei kirjattuja kuluja
+                </motion.p>
               ) : (
-                <div className="space-y-2">
+                <StaggerContainer className="space-y-2">
                   {expenses.slice(0, 5).map((expense) => {
                     const category = budgetCategories.find(
                       (c) => c.id === expense.categoryId
                     );
                     const horse = horses.find((h) => h.id === expense.horseId);
                     return (
-                      <div
-                        key={expense.id}
-                        className="flex items-center justify-between p-3 bg-muted rounded-lg"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className="w-3 h-3 rounded-full shrink-0"
-                            style={{ backgroundColor: category?.color }}
-                          />
-                          <div>
-                            <p className="font-medium">{expense.description}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {horse?.name} • {category?.name}
-                            </p>
+                      <StaggerItem key={expense.id}>
+                        <motion.div
+                          className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                          whileHover={{ scale: 1.01, x: 4 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        >
+                          <div className="flex items-center gap-3">
+                            <motion.div
+                              className="w-3 h-3 rounded-full shrink-0"
+                              style={{ backgroundColor: category?.color }}
+                              whileHover={{ scale: 1.5 }}
+                              transition={{ type: "spring", stiffness: 400 }}
+                            />
+                            <div>
+                              <p className="font-medium">{expense.description}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {horse?.name} • {category?.name}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                        <span className="font-bold">{expense.amount} €</span>
-                      </div>
+                          <span className="font-bold">{expense.amount} €</span>
+                        </motion.div>
+                      </StaggerItem>
                     );
                   })}
-                </div>
+                </StaggerContainer>
               )}
             </CardContent>
           </Card>
         </div>
       </div>
 
-      <Button className="w-full" onClick={() => setAddExpenseOpen(true)}>
-        <Plus className="mr-2 h-4 w-4" />
-        Lisää kulu
-      </Button>
+      <motion.div
+        whileHover={{ scale: 1.01 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <Button className="w-full" onClick={() => setAddExpenseOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Lisää kulu
+        </Button>
+      </motion.div>
 
       {/* Add Expense Modal */}
       <AddExpenseModal

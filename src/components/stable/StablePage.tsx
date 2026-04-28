@@ -1,4 +1,7 @@
+"use client";
+
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronRight, Home } from "lucide-react";
 import { Button } from "@components/primitives/Button";
 import { StableDashboard } from "./StableDashboard";
@@ -113,33 +116,75 @@ export function StablePage() {
       <main className="container mx-auto px-4 py-6">
         {renderBreadcrumb()}
 
-        {currentView === "dashboard" && (
-          <StableDashboard
-            onViewHorse={handleViewHorse}
-            onViewBudget={handleViewBudget}
-            onViewCalendar={handleViewCalendar}
-            onViewSettings={handleViewSettings}
-          />
-        )}
+        <AnimatePresence mode="wait">
+          {currentView === "dashboard" && (
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            >
+              <StableDashboard
+                onViewHorse={handleViewHorse}
+                onViewBudget={handleViewBudget}
+                onViewCalendar={handleViewCalendar}
+                onViewSettings={handleViewSettings}
+              />
+            </motion.div>
+          )}
 
-        {currentView === "settings" && (
-          <StableSettings onBack={handleBackToDashboard} />
-        )}
+          {currentView === "settings" && (
+            <motion.div
+              key="settings"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            >
+              <StableSettings onBack={handleBackToDashboard} />
+            </motion.div>
+          )}
 
-        {currentView === "horse-detail" && selectedHorseId && (
-          <HorseDetail
-            horseId={selectedHorseId}
-            onBack={handleBackToDashboard}
-          />
-        )}
+          {currentView === "horse-detail" && selectedHorseId && (
+            <motion.div
+              key="horse-detail"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            >
+              <HorseDetail
+                horseId={selectedHorseId}
+                onBack={handleBackToDashboard}
+              />
+            </motion.div>
+          )}
 
-        {currentView === "budget" && (
-          <BudgetDashboard onBack={handleBackToDashboard} />
-        )}
+          {currentView === "budget" && (
+            <motion.div
+              key="budget"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            >
+              <BudgetDashboard onBack={handleBackToDashboard} />
+            </motion.div>
+          )}
 
-        {currentView === "calendar" && (
-          <StableCalendar onBack={handleBackToDashboard} />
-        )}
+          {currentView === "calendar" && (
+            <motion.div
+              key="calendar"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            >
+              <StableCalendar onBack={handleBackToDashboard} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );

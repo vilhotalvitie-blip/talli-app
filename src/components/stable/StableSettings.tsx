@@ -1,10 +1,14 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { ArrowLeft, Save, Trash2, AlertTriangle, Lock, Globe } from "lucide-react";
 import { Button } from "@components/primitives/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@components/primitives/Card";
 import { Input } from "@components/primitives/Input";
 import { Label } from "@components/primitives/Label";
 import { useStableStore } from "@stores/stableStore";
-import { HorseAvatar } from "./HorseAvatar";
+import { CountUp } from "@components/animation/CountUp";
+import { StaggerContainer, StaggerItem } from "@components/animation/StaggerContainer";
 
 interface StableSettingsProps {
   onBack: () => void;
@@ -62,29 +66,54 @@ export function StableSettings({ onBack }: StableSettingsProps) {
           {/* Privacy Toggle */}
           <div className="space-y-2">
             <Label>Yksityisyys</Label>
-            <div className="flex gap-2">
+            <div className="flex gap-2 relative">
+              <motion.div
+                className="absolute inset-0 bg-primary-500 rounded-md"
+                initial={false}
+                animate={{
+                  x: stable.isPublic ? "100%" : "0%",
+                  opacity: stable.isPublic ? 0 : 1,
+                }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                style={{ width: "50%" }}
+              />
               <Button
                 variant={stable.isPublic ? "outline" : "default"}
-                className="flex-1"
+                className="flex-1 relative z-10"
                 onClick={() => !stable.isPublic || togglePrivacy()}
               >
-                <Lock className="h-4 w-4 mr-2" />
+                <motion.div
+                  animate={{ scale: stable.isPublic ? 0.9 : 1 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                >
+                  <Lock className="h-4 w-4 mr-2" />
+                </motion.div>
                 Yksityinen
               </Button>
               <Button
                 variant={stable.isPublic ? "default" : "outline"}
-                className="flex-1"
+                className="flex-1 relative z-10"
                 onClick={() => stable.isPublic || togglePrivacy()}
               >
-                <Globe className="h-4 w-4 mr-2" />
+                <motion.div
+                  animate={{ scale: stable.isPublic ? 1 : 0.9 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                >
+                  <Globe className="h-4 w-4 mr-2" />
+                </motion.div>
                 Julkinen
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <motion.p 
+              className="text-sm text-muted-foreground"
+              initial={false}
+              animate={{ opacity: 1 }}
+              key={stable.isPublic ? "public" : "private"}
+            >
               {stable.isPublic
                 ? "Tallisi on julkinen. Muut käyttäjät voivat nähdä perustiedot."
                 : "Tallisi on yksityinen. Vain sinä näet tallin sisällön."}
-            </p>
+            </motion.p>
           </div>
         </CardContent>
       </Card>
@@ -97,24 +126,49 @@ export function StableSettings({ onBack }: StableSettingsProps) {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-4 bg-muted rounded-lg text-center">
-              <p className="text-2xl font-bold">{horses.length}</p>
-              <p className="text-sm text-muted-foreground">Hevoset</p>
-            </div>
-            <div className="p-4 bg-muted rounded-lg text-center">
-              <p className="text-2xl font-bold">{expenses.length}</p>
-              <p className="text-sm text-muted-foreground">Kulut</p>
-            </div>
-            <div className="p-4 bg-muted rounded-lg text-center">
-              <p className="text-2xl font-bold">{events.length}</p>
-              <p className="text-sm text-muted-foreground">Tapahtumat</p>
-            </div>
-            <div className="p-4 bg-muted rounded-lg text-center">
+            <motion.div 
+              className="p-4 bg-muted rounded-lg text-center"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400 }}
+            >
               <p className="text-2xl font-bold">
-                {Math.floor((Date.now() - new Date(stable.createdAt).getTime()) / (1000 * 60 * 60 * 24))}
+                <CountUp end={horses.length} duration={1} />
+              </p>
+              <p className="text-sm text-muted-foreground">Hevoset</p>
+            </motion.div>
+            <motion.div 
+              className="p-4 bg-muted rounded-lg text-center"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400 }}
+            >
+              <p className="text-2xl font-bold">
+                <CountUp end={expenses.length} duration={1} />
+              </p>
+              <p className="text-sm text-muted-foreground">Kulut</p>
+            </motion.div>
+            <motion.div 
+              className="p-4 bg-muted rounded-lg text-center"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400 }}
+            >
+              <p className="text-2xl font-bold">
+                <CountUp end={events.length} duration={1} />
+              </p>
+              <p className="text-sm text-muted-foreground">Tapahtumat</p>
+            </motion.div>
+            <motion.div 
+              className="p-4 bg-muted rounded-lg text-center"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400 }}
+            >
+              <p className="text-2xl font-bold">
+                <CountUp 
+                  end={Math.floor((Date.now() - new Date(stable.createdAt).getTime()) / (1000 * 60 * 60 * 24))} 
+                  duration={1.5} 
+                />
               </p>
               <p className="text-sm text-muted-foreground">Päivää tallissa</p>
-            </div>
+            </motion.div>
           </div>
         </CardContent>
       </Card>
@@ -127,35 +181,53 @@ export function StableSettings({ onBack }: StableSettingsProps) {
         </CardHeader>
         <CardContent>
           {horses.length === 0 ? (
-            <p className="text-muted-foreground">Ei hevosia hallinnoitavaksi</p>
+            <motion.p 
+              className="text-muted-foreground"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              Ei hevosia hallinnoitavaksi
+            </motion.p>
           ) : (
-            <div className="space-y-2">
+            <StaggerContainer className="space-y-2">
               {horses.map((horse) => (
-                <div
-                  key={horse.id}
-                  className="flex items-center justify-between p-3 bg-muted rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <HorseAvatar horse={horse} size="sm" />
+                <StaggerItem key={horse.id}>
+                  <motion.div
+                    className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                    whileHover={{ scale: 1.01, x: 4 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  >
                     <div>
                       <p className="font-medium">{horse.name}</p>
                       <p className="text-sm text-muted-foreground">
                         {horse.breed} • {horse.age} v
                       </p>
                     </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-error hover:text-error hover:bg-error/10"
-                    onClick={() => handleDeleteHorse(horse.id, horse.name)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Poista
-                  </Button>
-                </div>
+                    <motion.div
+                      whileHover={{ 
+                        scale: 1.05,
+                        x: [0, -2, 2, -2, 2, 0],
+                      }}
+                      transition={{ 
+                        type: "spring", 
+                        stiffness: 400,
+                        x: { duration: 0.4 }
+                      }}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-error hover:text-error hover:bg-error/10"
+                        onClick={() => handleDeleteHorse(horse.id, horse.name)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Poista
+                      </Button>
+                    </motion.div>
+                  </motion.div>
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerContainer>
           )}
         </CardContent>
       </Card>
@@ -177,19 +249,31 @@ export function StableSettings({ onBack }: StableSettingsProps) {
                 Poista kaikki hevoset, kulut ja tapahtumat
               </p>
             </div>
-            <Button
-              variant="outline"
-              className="text-error border-error hover:bg-error/10"
-              onClick={() => {
-                if (confirm("Oletko varma? Tämä poistaa KAIKKI tallin tiedot pysyvästi!")) {
-                  // Clear all data
-                  horses.forEach((h) => removeHorse(h.id));
-                }
+            <motion.div
+              whileHover={{ 
+                scale: 1.05,
+                x: [0, -3, 3, -3, 3, 0],
+              }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 400,
+                x: { duration: 0.5 }
               }}
             >
-              <Trash2 className="h-4 w-4 mr-1" />
-              Tyhjennä
-            </Button>
+              <Button
+                variant="outline"
+                className="text-error border-error hover:bg-error/10"
+                onClick={() => {
+                  if (confirm("Oletko varma? Tämä poistaa KAIKKI tallin tiedot pysyvästi!")) {
+                    // Clear all data
+                    horses.forEach((h) => removeHorse(h.id));
+                  }
+                }}
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Tyhjennä
+              </Button>
+            </motion.div>
           </div>
         </CardContent>
       </Card>

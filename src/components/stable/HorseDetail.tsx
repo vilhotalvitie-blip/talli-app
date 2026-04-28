@@ -1,9 +1,8 @@
-import { ArrowLeft, Activity, Calendar, Euro, FileText } from "lucide-react";
+import { ArrowLeft, Heart, Activity, Calendar, Euro, FileText } from "lucide-react";
 import { Button } from "@components/primitives/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@components/primitives/Card";
 import { useStableStore } from "@stores/stableStore";
 import { cn } from "@lib/utils";
-import { HorseAvatar } from "./HorseAvatar";
 
 interface HorseDetailProps {
   horseId: string;
@@ -45,8 +44,8 @@ export function HorseDetail({ horseId, onBack }: HorseDetailProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-start gap-4">
-        <div className="shrink-0">
-          <HorseAvatar horse={horse} size="lg" className="rounded-lg bg-muted" />
+        <div className="w-24 h-24 bg-muted rounded-lg flex items-center justify-center shrink-0">
+          <Heart className="h-12 w-12 text-muted-foreground" />
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">

@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { ArrowLeft, Plus, Calendar, Clock, CheckCircle2, Circle } from "lucide-react";
 import { Button } from "@components/primitives/Button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@components/primitives/Card";
@@ -5,6 +8,8 @@ import { useState } from "react";
 import { useStableStore, CalendarEvent } from "@stores/stableStore";
 import { cn } from "@lib/utils";
 import { AddEventModal } from "./AddEventModal";
+import { StaggerContainer, StaggerItem } from "@components/animation/StaggerContainer";
+import { CountUp } from "@components/animation/CountUp";
 
 interface StableCalendarProps {
   onBack: () => void;
@@ -76,7 +81,9 @@ export function StableCalendar({ onBack }: StableCalendarProps) {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Tulevat</p>
-                <p className="text-2xl font-bold">{upcomingEvents.length}</p>
+                <p className="text-2xl font-bold">
+                  <CountUp end={upcomingEvents.length} duration={1} />
+                </p>
               </div>
             </div>
           </CardContent>
@@ -90,7 +97,9 @@ export function StableCalendar({ onBack }: StableCalendarProps) {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Tehdyt</p>
-                <p className="text-2xl font-bold">{completedEvents.length}</p>
+                <p className="text-2xl font-bold">
+                  <CountUp end={completedEvents.length} duration={1} />
+                </p>
               </div>
             </div>
           </CardContent>
@@ -105,47 +114,66 @@ export function StableCalendar({ onBack }: StableCalendarProps) {
         </CardHeader>
         <CardContent>
           {upcomingEvents.length === 0 ? (
-            <p className="text-muted-foreground">Ei tulevia tapahtumia</p>
+            <motion.p 
+              className="text-muted-foreground"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              Ei tulevia tapahtumia
+            </motion.p>
           ) : (
-            <div className="space-y-3">
+            <StaggerContainer className="space-y-3">
               {upcomingEvents.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  horse={horses.find((h) => h.id === event.horseId)}
-                  onComplete={() => completeEvent(event.id)}
-                />
+                <StaggerItem key={event.id}>
+                  <EventCard
+                    event={event}
+                    horse={horses.find((h) => h.id === event.horseId)}
+                    onComplete={() => completeEvent(event.id)}
+                  />
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerContainer>
           )}
         </CardContent>
       </Card>
 
       {/* Completed Events */}
       {completedEvents.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-muted-foreground">Tehdyt tapahtumat</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {completedEvents.slice(0, 5).map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  horse={horses.find((h) => h.id === event.horseId)}
-                  completed
-                />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-muted-foreground">Tehdyt tapahtumat</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <StaggerContainer className="space-y-3">
+                {completedEvents.slice(0, 5).map((event) => (
+                  <StaggerItem key={event.id}>
+                    <EventCard
+                      event={event}
+                      horse={horses.find((h) => h.id === event.horseId)}
+                      completed
+                    />
+                  </StaggerItem>
+                ))}
+              </StaggerContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
       )}
 
-      <Button className="w-full" onClick={() => setAddEventOpen(true)}>
-        <Plus className="mr-2 h-4 w-4" />
-        Lisää tapahtuma
-      </Button>
+      <motion.div
+        whileHover={{ scale: 1.01 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <Button className="w-full" onClick={() => setAddEventOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Lisää tapahtuma
+        </Button>
+      </motion.div>
 
       {/* Add Event Modal */}
       <AddEventModal
@@ -168,26 +196,32 @@ function EventCard({
   completed?: boolean;
 }) {
   return (
-    <div
+    <motion.div
       className={cn(
         "flex items-start gap-3 p-4 rounded-lg border",
         completed ? "bg-muted/50 border-muted" : "bg-background"
       )}
+      whileHover={{ scale: 1.01, x: 4 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      layout
     >
-      <button
+      <motion.button
         onClick={onComplete}
         className={cn(
           "mt-0.5 shrink-0",
           completed ? "text-success" : "text-muted-foreground hover:text-success"
         )}
         disabled={completed}
+        whileHover={{ scale: 1.2 }}
+        whileTap={{ scale: 0.9 }}
+        transition={{ type: "spring", stiffness: 400 }}
       >
         {completed ? (
           <CheckCircle2 className="h-5 w-5" />
         ) : (
           <Circle className="h-5 w-5" />
         )}
-      </button>
+      </motion.button>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
@@ -212,6 +246,6 @@ function EventCard({
           <p className="text-sm text-muted-foreground mt-2">{event.notes}</p>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

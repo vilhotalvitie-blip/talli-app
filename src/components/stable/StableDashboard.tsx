@@ -1,4 +1,7 @@
+"use client";
+
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { 
   Plus, 
   Settings, 
@@ -18,7 +21,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@comp
 import { cn } from "@lib/utils";
 import { useStableStore, seedDemoData, Horse as HorseType } from "@stores/stableStore";
 import { AddHorseModal } from "./AddHorseModal";
-import { HorseAvatar } from "./HorseAvatar";
+import { CountUp } from "@components/animation/CountUp";
+import { StaggerContainer, StaggerItem } from "@components/animation/StaggerContainer";
 
 interface StableDashboardProps {
   onViewHorse: (horseId: string) => void;
@@ -133,7 +137,9 @@ export function StableDashboard({ onViewHorse, onViewBudget, onViewCalendar, onV
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Hevoset</p>
-                <p className="text-2xl font-bold">{horses.length}</p>
+                <p className="text-2xl font-bold">
+                  <CountUp end={horses.length} duration={1} />
+                </p>
               </div>
             </div>
           </CardContent>
@@ -147,7 +153,9 @@ export function StableDashboard({ onViewHorse, onViewBudget, onViewCalendar, onV
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Kulut (kk)</p>
-                <p className="text-2xl font-bold">{totalExpenses} €</p>
+                <p className="text-2xl font-bold">
+                  <CountUp end={totalExpenses} duration={1.2} suffix=" €" />
+                </p>
               </div>
             </div>
           </CardContent>
@@ -161,7 +169,9 @@ export function StableDashboard({ onViewHorse, onViewBudget, onViewCalendar, onV
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Tulevat tapahtumat</p>
-                <p className="text-2xl font-bold">{upcomingEvents}</p>
+                <p className="text-2xl font-bold">
+                  <CountUp end={upcomingEvents} duration={1} />
+                </p>
               </div>
             </div>
           </CardContent>
@@ -188,26 +198,44 @@ export function StableDashboard({ onViewHorse, onViewBudget, onViewCalendar, onV
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Hevoset</h2>
-          <Button size="sm" onClick={() => setAddHorseOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Lisää hevonen
-          </Button>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Button size="sm" onClick={() => setAddHorseOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Lisää hevonen
+            </Button>
+          </motion.div>
         </div>
 
         {horses.length === 0 ? (
-          <Card className="p-8 text-center">
-            <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">Ei hevosia vielä</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Lisää ensimmäinen hevosesi aloittaaksesi
-            </p>
-          </Card>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className="p-8 text-center">
+              <motion.div
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              </motion.div>
+              <p className="text-muted-foreground">Ei hevosia vielä</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Lisää ensimmäinen hevosesi aloittaaksesi
+              </p>
+            </Card>
+          </motion.div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {horses.map((horse) => (
-              <HorseCard key={horse.id} horse={horse} onClick={() => onViewHorse(horse.id)} />
+              <StaggerItem key={horse.id}>
+                <HorseCard horse={horse} onClick={() => onViewHorse(horse.id)} />
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         )}
       </div>
 
@@ -256,46 +284,61 @@ function HorseCard({ horse, onClick }: { horse: HorseType; onClick: () => void }
   };
 
   return (
-    <Card 
-      className="cursor-pointer hover:shadow-md transition-shadow group"
-      onClick={onClick}
+    <motion.div
+      whileHover={{ 
+        scale: 1.02, 
+        y: -4,
+        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)"
+      }}
+      whileTap={{ scale: 0.98 }}
+      transition={{
+        type: "spring",
+        stiffness: 400,
+        damping: 25,
+      }}
     >
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
-              <HorseAvatar horse={horse} size="sm" className="shrink-0" />
-              <div>
-                <span className={cn("inline-flex px-2 py-0.5 rounded-full text-xs font-medium", genderColors[horse.gender])}>
-                  {genderLabels[horse.gender]}
-                </span>
-                <CardTitle className="text-lg mt-1 group-hover:text-primary-500 transition-colors">
-                  {horse.name}
-                </CardTitle>
-                <CardDescription className="text-xs">{horse.breed}</CardDescription>
-              </div>
+      <Card 
+        className="cursor-pointer group h-full"
+        onClick={onClick}
+      >
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div>
+              <span className={cn("inline-flex px-2 py-0.5 rounded-full text-xs font-medium", genderColors[horse.gender])}>
+                {genderLabels[horse.gender]}
+              </span>
+              <CardTitle className="text-lg mt-2 group-hover:text-primary-500 transition-colors">
+                {horse.name}
+              </CardTitle>
+              <CardDescription>{horse.breed}</CardDescription>
+            </div>
+            <motion.div
+              initial={{ x: 0 }}
+              whileHover={{ x: 4 }}
+              transition={{ type: "spring", stiffness: 400 }}
+            >
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </motion.div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="flex gap-4 text-sm">
+            <div>
+              <span className="text-muted-foreground">Ikä</span>
+              <p className="font-medium">{horse.age} v</p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Säkä</span>
+              <p className="font-medium">{horse.height} cm</p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Paino</span>
+              <p className="font-medium">{horse.weight} kg</p>
             </div>
           </div>
-          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="flex gap-4 text-sm">
-          <div>
-            <span className="text-muted-foreground">Ikä</span>
-            <p className="font-medium">{horse.age} v</p>
-          </div>
-          <div>
-            <span className="text-muted-foreground">Säkä</span>
-            <p className="font-medium">{horse.height} cm</p>
-          </div>
-          <div>
-            <span className="text-muted-foreground">Paino</span>
-            <p className="font-medium">{horse.weight} kg</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }
 
@@ -311,19 +354,36 @@ function QuickActionCard({
   onClick: () => void;
 }) {
   return (
-    <Card 
-      className="cursor-pointer hover:bg-muted/50 transition-colors"
-      onClick={onClick}
+    <motion.div
+      whileHover={{ 
+        scale: 1.02, 
+        y: -2,
+      }}
+      whileTap={{ scale: 0.98 }}
+      transition={{
+        type: "spring",
+        stiffness: 400,
+        damping: 25,
+      }}
     >
-      <CardContent className="p-4 flex items-center gap-3">
-        <div className="p-2 bg-primary-100 dark:bg-primary-900 rounded-lg">
-          <Icon className="h-4 w-4 text-primary-600" />
-        </div>
-        <div>
-          <p className="font-medium">{title}</p>
-          <p className="text-sm text-muted-foreground">{description}</p>
-        </div>
-      </CardContent>
-    </Card>
+      <Card 
+        className="cursor-pointer hover:bg-muted/50 transition-colors group"
+        onClick={onClick}
+      >
+        <CardContent className="p-4 flex items-center gap-3">
+          <motion.div 
+            className="p-2 bg-primary-100 dark:bg-primary-900 rounded-lg"
+            whileHover={{ rotate: 5, scale: 1.1 }}
+            transition={{ type: "spring", stiffness: 400 }}
+          >
+            <Icon className="h-4 w-4 text-primary-600" />
+          </motion.div>
+          <div>
+            <p className="font-medium">{title}</p>
+            <p className="text-sm text-muted-foreground">{description}</p>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }
